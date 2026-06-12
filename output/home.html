@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>台股做多選股器・功能總覽</title>
+<style>
+:root{--bg:#0f1420;--panel:#171d2b;--panel2:#1e2536;--line:#2a3142;--txt:#e6e9f0;--mut:#9aa4b8;--gold:#d4be8f;--green:#22c55e;--blue:#3b82f6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:"PingFang TC","Heiti TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.7}
+.wrap{max-width:1080px;margin:0 auto;padding:32px 24px 64px}
+.hero{text-align:center;padding:24px 0 8px}
+.hero h1{font-size:32px;margin:0 0 8px;letter-spacing:1px}
+.hero p{color:var(--mut);font-size:17px;margin:0 auto;max-width:680px}
+.cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:24px 0 8px}
+.btn{display:inline-flex;align-items:center;gap:8px;font-size:17px;font-weight:700;
+  border-radius:12px;padding:13px 26px;text-decoration:none;border:1px solid var(--line)}
+.btn.primary{background:var(--gold);color:#0f1420;border-color:var(--gold)}
+.btn.ghost{background:var(--panel2);color:var(--txt)}
+.btn:hover{filter:brightness(1.08)}
+h2{font-size:22px;margin:40px 0 14px;border-left:4px solid var(--gold);padding-left:12px}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.step .n{display:inline-block;width:28px;height:28px;line-height:28px;text-align:center;
+  border-radius:50%;background:var(--gold);color:#0f1420;font-weight:700;margin-bottom:8px}
+.step h3{margin:0 0 6px;font-size:17px}
+.step p{margin:0;color:var(--mut);font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.card h3{margin:0 0 8px;font-size:18px}
+.card p{margin:0;color:#cdd5e6;font-size:15px}
+.card .tags{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:13px;border-radius:20px;padding:3px 10px;background:var(--panel2);border:1px solid var(--line);color:#cdd5e6}
+.tag.g{border-color:#1f5a3a;color:#9bf0bf}.tag.b{border-color:#1f4a6a;color:#8fd3ff}.tag.r{border-color:#6a2020;color:#ff9b9b}
+.def{background:linear-gradient(180deg,#19233a,#141a28);border:1px solid #2a3a5a;border-radius:14px;padding:18px 22px;margin-top:14px;font-size:16px}
+.def b{color:var(--gold)}
+.disc{margin-top:36px;color:var(--mut);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <h1>台股做多選股器</h1>
+    <p>在 2~10 萬/張、夠流動的台股裡,自動找出符合「做多形態」的標的,並算好進場、停損、口數與加碼——以趨勢線 + 形態學為核心。</p>
+    <div class="cta">
+      <a class="btn primary" href="report.html">📊 開啟選股報告</a>
+      <a class="btn ghost" href="trends.html">📈 趨勢線說明</a>
+    </div>
+  </div>
+
+  <h2>怎麼運作(四關)</h2>
+  <div class="flow">
+    <div class="step"><span class="n">1</span><h3>篩選池</h3><p>上市+上櫃、股價 NT$20~100(一張 2~10萬)、近20日均量 ≥ 500 張。</p></div>
+    <div class="step"><span class="n">2</span><h3>形態偵測</h3><p>W底/雙重底、頭肩底、複合頭肩底、動能突破;含「結構不可被跌破」失效檢查。</p></div>
+    <div class="step"><span class="n">3</span><h3>趨勢線分類</h3><p>依趨勢線分主次名單:主要(順勢)/ 次要(觸底反彈)。</p></div>
+    <div class="step"><span class="n">4</span><h3>進場與資金</h3><p>進場/停損/口數/加碼,並判斷進場時效(排除追高)。</p></div>
+  </div>
+
+  <h2>核心功能</h2>
+  <div class="grid">
+    <div class="card"><h3>形態偵測(含失效檢查)</h3>
+      <p>四種做多形態自動偵測,橘色輪廓畫出形狀。底部/頭部後來被跌破的失效形態會自動排除。</p>
+      <div class="tags"><span class="tag">W底</span><span class="tag">頭肩底</span><span class="tag">複合頭肩底</span><span class="tag">動能突破</span></div></div>
+    <div class="card"><h3>主要 / 次要名單</h3>
+      <p>依趨勢線型態分類:上升支撐・雙軌道=主要(順勢);下降阻力突破・橫向箱型=次要(觸底反彈)。</p>
+      <div class="tags"><span class="tag g">主要·順勢</span><span class="tag">次要·觸底反彈</span></div></div>
+    <div class="card"><h3>進場方式可切換</h3>
+      <p>柏仁優先「回測碰線買」(回測上升支撐/軌道下緣才進)或「突破買」(頸線突破),報告即時切換數字。</p>
+      <div class="tags"><span class="tag b">回測碰線買</span><span class="tag">突破買</span></div></div>
+    <div class="card"><h3>進場時效(排除追高)</h3>
+      <p>現價離進場太遠=已追高=太晚,預設隱藏。回測碰線買 >12%、突破買 >4% 標紅「追高·太晚」。</p>
+      <div class="tags"><span class="tag r">追高·太晚</span><span class="tag g">時效內</span></div></div>
+    <div class="card"><h3>資金管理</h3>
+      <p>總資金 30 萬、單筆風險 1%。回推每張停損金額、建議口數、實際風險%;獲利後 +2R 無風險加碼。</p>
+      <div class="tags"><span class="tag">1% 風險</span><span class="tag">口數計算</span><span class="tag">金字塔加碼</span></div></div>
+    <div class="card"><h3>K 線圖標註</h3>
+      <p>每檔附 K 線圖:形態輪廓、趨勢線(綠支撐/紅阻力)、進場藍線、停損紅線、關鍵點標記。</p>
+      <div class="tags"><span class="tag g">綠=支撐</span><span class="tag r">紅=阻力/停損</span><span class="tag b">藍=進場</span></div></div>
+  </div>
+
+  <h2>預設視圖</h2>
+  <div class="def">打開選股報告,預設聚焦在 → <b>主要名單(順勢)</b> + <b>回測碰線買(柏仁優先)</b> + <b>可進場(1% 內)</b> + <b>時效內(未追高)</b>,直接給你「還沒太晚、風險可控」的順勢做多清單。所有條件都能用上方下拉/開關自由切換。</div>
+
+  <div class="disc">⚠️ <b>重要聲明</b>:本工具為演算法自動偵測之「候選標的 + 信心分數」,<b>非買賣建議</b>。趨勢線、頸線、形態為程式近似判讀,務必對照 K 線圖人工複核。形態學為機率性工具,突破可能失敗;資料來源為免費 API,偶有缺漏。投資有風險,盈虧自負。</div>
+
+</div>
+</body>
+</html>

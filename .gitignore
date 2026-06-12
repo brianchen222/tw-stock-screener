@@ -1,0 +1,21 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# 系統
+.DS_Store
+
+# 本機預覽 / 設定(雲端不需要)
+.claude/
+launch.json
+
+# 產出物(由 workflow 每次重新產生並發布到 Pages,不入版控)
+output/charts/
+output/report.html
+output/index.html
+output/screener_results.csv
+output/run_*.log
+
+# 保留:程式碼、requirements、data/(一年歷史快取)、
+#       output/home.html、output/trends.html、output/trend_examples/(靜態頁)

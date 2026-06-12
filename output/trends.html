@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>趨勢線四型態案例</title>
+<style>
+:root{--bg:#0f1420;--panel:#171d2b;--line:#2a3142;--txt:#e6e9f0;--mut:#9aa4b8;--gold:#d4be8f;--green:#22c55e;--red:#ef4444}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:"PingFang TC","Heiti TC","Microsoft JhengHei",system-ui,sans-serif}
+header{padding:20px 24px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#0f1420;z-index:5}
+h1{margin:0;font-size:24px;letter-spacing:1px}
+.sub{color:var(--mut);font-size:16px;margin-top:4px}
+.legend{margin-top:10px;font-size:16px;color:var(--mut)}
+.legend b{padding:1px 8px;border-radius:6px;color:#0f1420;font-weight:700}
+main{padding:18px 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.cap{padding:12px 16px}
+.tag{display:inline-block;font-size:14px;font-weight:700;border-radius:8px;padding:3px 10px;margin-bottom:8px;color:#0f1420}
+.t-up{background:#22c55e}.t-break{background:#ef4444}.t-box{background:#d4be8f}.t-ch{background:#a78bfa}
+.cap h2{margin:0 0 6px;font-size:20px}
+.cap .stk{color:var(--gold);font-size:17px;margin-bottom:8px}
+.cap p{margin:5px 0;font-size:16px;line-height:1.7;color:#cdd5e6}
+.cap .use{color:#a8d8ff}
+.imgwrap{background:#fff}
+.imgwrap img{width:100%;display:block;cursor:zoom-in}
+#lb{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:50;cursor:zoom-out}
+#lb img{max-width:96vw;max-height:96vh}
+.note{grid-column:1/-1;color:var(--mut);font-size:14px;border-top:1px solid var(--line);padding-top:12px;line-height:1.7}
+</style>
+</head>
+<body>
+<header>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+    <h1>趨勢線・四種型態案例</h1>
+    <span style="display:flex;gap:10px">
+      <a href="home.html" style="font-size:16px;color:#a8d8ff;background:#0c1c2a;border:1px solid #1f3a4a;border-radius:8px;padding:6px 12px;text-decoration:none;white-space:nowrap">🏠 首頁</a>
+      <a href="report.html" style="font-size:16px;color:#a8d8ff;background:#0c1c2a;border:1px solid #1f3a4a;border-radius:8px;padding:6px 12px;text-decoration:none;white-space:nowrap">← 選股報告</a>
+    </span>
+  </div>
+  <div class="sub">用實際台股案例說明:上升支撐 / 下降阻力突破 / 橫向(箱型) / 雙軌道</div>
+  <div class="legend">圖例:<b style="background:#2ca02c">綠線 = 支撐 / 上升</b>　<b style="background:#d62728">紅線 = 阻力 / 下降</b>（點圖可放大）</div>
+</header>
+<main>
+
+  <div class="card">
+    <div class="imgwrap"><img src="trend_examples/上升支撐_6153_嘉聯益.png" onclick="zoom(this.src)"></div>
+    <div class="cap">
+      <span class="tag t-up">① 上升支撐</span>
+      <h2>低點越墊越高</h2>
+      <div class="stk">案例:6153 嘉聯益(觸碰 6 次)</div>
+      <p>綠色斜向上的線,連接「一波比一波高」的低點,代表多方持續進場、底部墊高。</p>
+      <p class="use">做多:回測到線附近不破 → 買點;<b style="color:#ff8a8a">跌破線</b>才轉弱出場。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="imgwrap"><img src="trend_examples/下降阻力突破_9921_巨大.png" onclick="zoom(this.src)"></div>
+    <div class="cap">
+      <span class="tag t-break">② 下降阻力突破</span>
+      <h2>壓力被攻克,由空翻多</h2>
+      <div class="stk">案例:9921 巨大</div>
+      <p>紅色斜向下的線,壓著「一波比一波低」的高點(原本空方主場)。價格<b style="color:#9bf0bf">向上突破紅線</b>=轉折訊號。</p>
+      <p class="use">做多:站上紅線(突破)= 進場;這是趨勢反轉的起點。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="imgwrap"><img src="trend_examples/橫向_5880_合庫金.png" onclick="zoom(this.src)"></div>
+    <div class="cap">
+      <span class="tag t-box">③ 橫向 / 箱型</span>
+      <h2>區間內來回整理</h2>
+      <div class="stk">案例:5880 合庫金(箱底 22.7 / 箱頂 24)</div>
+      <p>上下兩條接近水平的線夾出箱子,價格在區間內來回,多空僵持、方向未明。</p>
+      <p class="use">做多:跌箱底買、漲箱頂賣;或<b style="color:#9bf0bf">突破箱頂</b>才追多(箱型突破)。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="imgwrap"><img src="trend_examples/雙軌道_3162_精確.png" onclick="zoom(this.src)"></div>
+    <div class="cap">
+      <span class="tag t-ch">④ 雙軌道(上升軌道)</span>
+      <h2>上下平行、同步向上</h2>
+      <div class="stk">案例:3162 精確</div>
+      <p>上下兩條平行且同步向上的線(綠下緣=上升支撐、紅上緣=上升阻力),價格沿軌道往上爬,最強多頭結構。</p>
+      <p class="use">做多:碰下緣(綠)買、碰上緣(紅)減;跌破下緣才出場。</p>
+    </div>
+  </div>
+
+  <div class="note">說明:四條線皆由程式自動從轉折點偵測並繪製,會直接疊在每檔的 K 線圖上。綠=支撐/上升,紅=阻力/下降。</div>
+</main>
+<div id="lb"><img id="lbimg"></div>
+<script>
+function zoom(s){document.getElementById('lbimg').src=s;document.getElementById('lb').style.display='flex';}
+document.getElementById('lb').onclick=function(){this.style.display='none';};
+</script>
+</body>
+</html>
