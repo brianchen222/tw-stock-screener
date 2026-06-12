@@ -150,6 +150,11 @@ h1{margin:0 0 4px;font-size:24px;letter-spacing:1px}
   background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
 .toggle input{accent-color:var(--blue)}
 #count{color:var(--mut);font-size:16px}
+.param{font-size:15px;color:var(--txt);background:var(--panel);border:1px solid var(--line);
+  border-radius:8px;padding:6px 12px;font-weight:700}
+.param input{background:var(--panel2);color:var(--gold);border:1px solid var(--line);
+  border-radius:6px;padding:4px 6px;font-size:15px;font-weight:700;width:96px;margin:0 2px}
+.param input#pmin,.param input#pmax{width:56px}
 .expbtn{font-size:15px;font-weight:700;color:#0f1420;background:var(--gold);border:none;
   border-radius:8px;padding:8px 16px;cursor:pointer;margin-left:auto}
 .expbtn:hover{filter:brightness(1.08)}
@@ -215,6 +220,11 @@ a{color:var(--blue)}
   <div class="hrow"><h1>台股做多選股報告</h1><span style="display:flex;gap:10px"><a class="navlink" href="home.html">🏠 首頁</a><a class="navlink" href="trends.html">趨勢線說明 →</a></span></div>
   <div class="sub" id="subline"></div>
   <div class="stats" id="stats"></div>
+  <div class="controls" style="margin-bottom:6px">
+    <span class="param">總資金 NT$<input type="number" id="capital" value="300000" step="10000" min="10000"></span>
+    <span class="param">價格 NT$<input type="number" id="pmin" value="20" step="1" min="0"> ~ <input type="number" id="pmax" value="100" step="1" min="0"></span>
+    <span style="color:var(--mut);font-size:14px">(改總資金→即時重算口數/風險;改價格→篩選顯示)</span>
+  </div>
   <div class="controls">
     <input type="text" id="q" placeholder="搜尋代號 / 名稱…">
     <select id="tier">
@@ -264,14 +274,13 @@ const DATA = /*__DATA__*/;
 const META = /*__META__*/;
 
 document.getElementById('subline').textContent =
-  `產生日期 ${META.date}　|　總資金 NT$${META.capital.toLocaleString()}，單筆風險 ${META.risk_pct}%　|　` +
-  `價格 NT$${META.min_price}~${META.max_price}（一張 ${META.min_budget.toLocaleString()}~${META.max_budget.toLocaleString()}）`;
+  `產生日期 ${META.date}　|　單筆風險 ${META.risk_pct}%　|　總資金與價格區間可在下方調整(即時重算)`;
 
 document.getElementById('stats').innerHTML =
   `<div class="stat"><b>${META.total}</b>命中標的</div>` +
   `<div class="stat"><b>${DATA.filter(d=>d.tier==='主要').length}</b>主要(順勢)</div>` +
   `<div class="stat"><b>${DATA.filter(d=>d.tier==='次要').length}</b>次要(觸底反彈)</div>` +
-  `<div class="stat"><b>${META.actionable}</b>可進場(口數≥1)</div>`;
+  `<div class="stat"><b id="actStat">${META.actionable}</b>可進場(口數≥1)</div>`;
 
 const patSel = document.getElementById('pat');
 META.patterns.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;patSel.appendChild(o);});
@@ -293,10 +302,36 @@ document.getElementById('disc').innerHTML =
 const fmt = n => (n==null?'—':Number(n).toLocaleString());
 const grid = document.getElementById('grid');
 
-function planOf(d, method){
+const LOT = 1000;  // 一張股數
+const RISKPCT = (META.risk_pct||1)/100;
+// 依「現在的總資金」即時重算第一批口數(對應 risk.first_entry)
+function firstEntry(entry, stop, cap){
+  const stopPerLot=(entry-stop)*LOT, costPerLot=entry*LOT;
+  if(stopPerLot<=0) return null;
+  const lots=Math.max(0, Math.min(Math.floor(cap*RISKPCT/stopPerLot), Math.floor(cap/costPerLot)));
+  const loss=lots*stopPerLot;
+  return {lots, position_cost:Math.round(lots*costPerLot), actual_loss:Math.round(loss),
+          risk_pct:+(loss/cap*100).toFixed(3), actionable:lots>=1};
+}
+// 加碼(+2R 加碼、停損移 +1R;對應 risk.pyramid_auto)
+function pyramidAuto(entry, stop, n1, cap){
+  const R=entry-stop, addEntry=entry+2*R, addStop=entry+1*R;
+  const firstProfit=(addStop-entry)*n1*LOT, addStopLot=(addEntry-addStop)*LOT;
+  if(addStopLot<=0) return null;
+  const remaining=cap-n1*entry*LOT;
+  const n2=Math.max(0, Math.min(Math.floor((cap*RISKPCT+firstProfit)/addStopLot), Math.floor(remaining/(addEntry*LOT))));
+  const r=n2*addStopLot-firstProfit;
+  return {add_entry:+addEntry.toFixed(2), add_stop:+addStop.toFixed(2), add_lots:n2,
+          add_risk_pct:+(r/cap*100).toFixed(3), risk_free:r<=0};
+}
+function planOf(d, method, cap){
   if(!d.plans) return null;
-  if(method==='突破買') return d.plans['突破買'];
-  return d.plans['回測碰線買'] || d.plans['突破買'];   // 柏仁優先:回測碰線買,沒有則退突破買
+  const base = (method==='突破買') ? d.plans['突破買'] : (d.plans['回測碰線買']||d.plans['突破買']);
+  if(!base || base.entry==null) return base||null;
+  const fe=firstEntry(base.entry, base.stop, cap);
+  if(!fe) return base;
+  const pyr = fe.actionable ? pyramidAuto(base.entry, base.stop, fe.lots, cap) : null;
+  return Object.assign({}, base, fe, pyr||{add_entry:null,add_stop:null,add_lots:null,add_risk_pct:null,risk_free:false});
 }
 function isTimely(p){
   // 進場時效:現價離進場太遠(追高)就不算時效內
@@ -376,6 +411,8 @@ function render(){
   const ob=document.getElementById('onlyBk').checked;
   const oc=document.getElementById('onlyChart').checked;
   const sort=document.getElementById('sort').value;
+  const cap=Math.max(10000, +document.getElementById('capital').value||300000);
+  const pmin=+document.getElementById('pmin').value, pmax=+document.getElementById('pmax').value;
   let list = DATA.filter(d=>{
     if(q && !(d.code.includes(q)||d.name.includes(q))) return false;
     if(ti && d.tier!==ti) return false;
@@ -383,8 +420,10 @@ function render(){
     if(pat && !d.pattern_names.includes(pat)) return false;
     if(ob && !d.breakout) return false;
     if(oc && !d.has_chart) return false;
+    if(!isNaN(pmin) && d.close<pmin) return false;
+    if(!isNaN(pmax) && pmax>0 && d.close>pmax) return false;
     return true;
-  }).map(d=>({d, p:planOf(d, method)}));
+  }).map(d=>({d, p:planOf(d, method, cap)}));
   if(oa) list = list.filter(x=>x.p && x.p.actionable);
   if(otl) list = list.filter(x=>isTimely(x.p));
   if(band < 30) list = list.filter(x=>x.p && x.p.entry!=null && Math.abs(x.d.close - x.p.entry)/x.p.entry <= band/100);
@@ -400,6 +439,8 @@ function render(){
   window.__filtered = list.map(x=>({code:x.d.code, name:x.d.name}));
   grid.innerHTML = list.map(x=>card(x.d, x.p)).join('');
   document.getElementById('count').textContent = `顯示 ${list.length} / ${DATA.length} 檔`;
+  const as=document.getElementById('actStat');
+  if(as) as.textContent = DATA.filter(d=>{const pp=planOf(d, method, cap); return pp&&pp.actionable;}).length;
 }
 function exportXQ(){
   const items = window.__filtered || [];
@@ -414,7 +455,7 @@ function exportXQ(){
   URL.revokeObjectURL(a.href);
 }
 document.getElementById('exportBtn').addEventListener('click', exportXQ);
-['q','tier','entry','market','pat','sort','timing','bandSlider','onlyAct','onlyTimely','onlyBk','onlyChart','showOutline'].forEach(id=>{
+['q','tier','entry','market','pat','sort','timing','bandSlider','capital','pmin','pmax','onlyAct','onlyTimely','onlyBk','onlyChart','showOutline'].forEach(id=>{
   document.getElementById(id).addEventListener('input',render);
   document.getElementById(id).addEventListener('change',render);
 });
