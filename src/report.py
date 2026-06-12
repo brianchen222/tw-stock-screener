@@ -150,6 +150,18 @@ h1{margin:0 0 4px;font-size:24px;letter-spacing:1px}
   background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
 .toggle input{accent-color:var(--blue)}
 #count{color:var(--mut);font-size:16px}
+.filterbar{display:flex;align-items:center;gap:12px;margin-top:12px}
+.fbtn{font-size:15px;font-weight:700;color:var(--txt);background:var(--panel2);
+  border:1px solid var(--line);border-radius:8px;padding:7px 14px;cursor:pointer}
+.fbtn:hover{background:#2a3450}
+.filterbar #count{margin-left:auto;color:var(--mut);font-size:16px}
+.sumbox{margin-top:10px;background:var(--panel);border:1px solid var(--line);
+  border-radius:12px;padding:14px 18px}
+.sumbox b{color:var(--gold);font-size:16px}
+.sumchips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.sumchip{font-size:14px;background:var(--panel2);border:1px solid var(--line);
+  border-radius:20px;padding:4px 12px;color:#cdd5e6}
+.sumlist{font-size:14px;color:var(--mut);line-height:1.8;border-top:1px solid var(--line);padding-top:10px}
 .param{font-size:15px;color:var(--txt);background:var(--panel);border:1px solid var(--line);
   border-radius:8px;padding:6px 12px;font-weight:700}
 .param input{background:var(--panel2);color:var(--gold);border:1px solid var(--line);
@@ -220,6 +232,13 @@ a{color:var(--blue)}
   <div class="hrow"><h1>台股做多選股報告</h1><span style="display:flex;gap:10px"><a class="navlink" href="home.html">🏠 首頁</a><a class="navlink" href="trends.html">趨勢線說明 →</a></span></div>
   <div class="sub" id="subline"></div>
   <div class="stats" id="stats"></div>
+  <div class="filterbar">
+    <button id="toggleFilters" class="fbtn">🔍 篩選條件 ▲</button>
+    <button id="toggleSummary" class="fbtn">📋 條件總覽</button>
+    <span id="count"></span>
+  </div>
+  <div id="summaryBox" class="sumbox" style="display:none"></div>
+  <div id="filters">
   <div class="controls" style="margin-bottom:6px">
     <span class="param">總資金 NT$<input type="number" id="capital" value="300000" step="10000" min="10000"></span>
     <span class="param">價格 NT$<input type="number" id="pmin" value="20" step="1" min="0"> ~ <input type="number" id="pmax" value="100" step="1" min="0"></span>
@@ -261,7 +280,7 @@ a{color:var(--blue)}
     <label class="toggle"><input type="checkbox" id="onlyChart">只看有圖</label>
     <label class="toggle"><input type="checkbox" id="showOutline" checked>型態輪廓線</label>
     <button id="exportBtn" class="expbtn">⬇️ 匯出名單(XQ)</button>
-    <span id="count"></span>
+  </div>
   </div>
 </header>
 <main>
@@ -441,7 +460,34 @@ function render(){
   document.getElementById('count').textContent = `顯示 ${list.length} / ${DATA.length} 檔`;
   const as=document.getElementById('actStat');
   if(as) as.textContent = DATA.filter(d=>{const pp=planOf(d, method, cap); return pp&&pp.actionable;}).length;
+  // 條件總覽
+  const S=[];
+  S.push('名單:'+(ti?({'主要':'主要(順勢)','次要':'次要(觸底反彈)','未分類':'未分類'}[ti]):'全部'));
+  S.push('進場方式:'+(method==='突破買'?'突破買':'回測碰線買(柏仁優先)'));
+  S.push('總資金 NT$'+cap.toLocaleString()+'(單筆風險'+META.risk_pct+'%)');
+  S.push('價格 NT$'+(isNaN(pmin)?0:pmin)+'~'+(isNaN(pmax)||pmax<=0?'∞':pmax));
+  if(oa) S.push('只看可進場(口數≥1)');
+  if(otl) S.push('只看時效內(未追高)');
+  S.push('貼近進場 ±'+band+'%');
+  if(tmg) S.push('進場時機:'+(({breakout_high:'① 帶量突破前高',pullback_ma:'② 回測均線不破',volume_surge:'③ 5MV翻揚',any:'符合任一'})[tmg]||tmg));
+  if(mk) S.push('市場:'+mk);
+  if(pat) S.push('形態:'+pat);
+  if(ob) S.push('只看已突破');
+  if(q) S.push('搜尋:'+q);
+  document.getElementById('summaryBox').innerHTML =
+    '<b>目前套用條件 → 共 '+list.length+' 檔符合</b>'+
+    '<div class="sumchips">'+S.map(s=>'<span class="sumchip">'+s+'</span>').join('')+'</div>'+
+    (list.length?'<div class="sumlist">'+list.map(x=>x.d.code+' '+x.d.name).join('　')+'</div>':'<div class="sumlist">(無符合標的,可放寬條件)</div>');
 }
+document.getElementById('toggleFilters').addEventListener('click',function(){
+  const f=document.getElementById('filters'), hidden=f.style.display==='none';
+  f.style.display=hidden?'block':'none';
+  this.textContent='🔍 篩選條件 '+(hidden?'▲':'▼');
+});
+document.getElementById('toggleSummary').addEventListener('click',function(){
+  const s=document.getElementById('summaryBox');
+  s.style.display=s.style.display==='none'?'block':'none';
+});
 function exportXQ(){
   const items = window.__filtered || [];
   if(!items.length){ alert('目前篩選沒有標的可匯出'); return; }
