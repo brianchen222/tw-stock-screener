@@ -150,6 +150,24 @@ h1{margin:0 0 4px;font-size:24px;letter-spacing:1px}
   background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
 .toggle input{accent-color:var(--blue)}
 #count{color:var(--mut);font-size:16px}
+.stat.clickable{cursor:pointer}
+.stat.clickable:hover{border-color:var(--gold);background:var(--panel2)}
+.qmark{color:var(--gold);font-size:14px;vertical-align:super}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:flex-start;
+  justify-content:center;z-index:120;overflow:auto;padding:40px 16px}
+.modalcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  max-width:680px;width:100%;padding:24px 28px;color:var(--txt)}
+.modalcard .mhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.modalcard .mhead b{font-size:20px;color:var(--gold)}
+.modalcard .mclose{cursor:pointer;font-size:22px;color:var(--mut);padding:0 6px}
+.modalcard .mclose:hover{color:var(--txt)}
+.modalcard h4{margin:18px 0 6px;font-size:17px;color:#a8d8ff;border-left:4px solid var(--gold);padding-left:10px}
+.modalcard p{margin:6px 0;font-size:15px;line-height:1.8;color:#cdd5e6}
+.modalcard ul{margin:6px 0;padding-left:22px}
+.modalcard li{font-size:15px;line-height:1.9;color:#cdd5e6}
+.modalcard b{color:var(--txt)}
+.modalcard .mnote{margin-top:18px;background:#0c1c2a;border:1px solid #1f3a4a;border-radius:10px;
+  padding:12px 14px;font-size:14.5px;color:#a8d8ff;line-height:1.8}
 .filterbar{display:flex;align-items:center;gap:12px;margin-top:12px}
 .fbtn{font-size:15px;font-weight:700;color:var(--txt);background:var(--panel2);
   border:1px solid var(--line);border-radius:8px;padding:7px 14px;cursor:pointer}
@@ -288,6 +306,7 @@ a{color:var(--blue)}
   <div class="disclaimer" id="disc"></div>
 </main>
 <div id="lb"><img id="lbimg" src=""></div>
+<div id="logicModal" class="modal" style="display:none"><div class="modalcard" id="logicCard"></div></div>
 <script>
 const DATA = /*__DATA__*/;
 const META = /*__META__*/;
@@ -296,7 +315,7 @@ document.getElementById('subline').textContent =
   `產生日期 ${META.date}　|　單筆風險 ${META.risk_pct}%　|　總資金與價格區間可在下方調整(即時重算)`;
 
 document.getElementById('stats').innerHTML =
-  `<div class="stat"><b>${META.total}</b>命中標的</div>` +
+  `<div class="stat clickable" onclick="showLogic()" title="點我看篩選邏輯"><b>${META.total}</b>命中標的 <span class="qmark">ⓘ</span></div>` +
   `<div class="stat"><b>${DATA.filter(d=>d.tier==='主要').length}</b>主要(順勢)</div>` +
   `<div class="stat"><b>${DATA.filter(d=>d.tier==='次要').length}</b>次要(觸底反彈)</div>` +
   `<div class="stat"><b id="actStat">${META.actionable}</b>可進場(口數≥1)</div>`;
@@ -488,6 +507,32 @@ document.getElementById('toggleSummary').addEventListener('click',function(){
   const s=document.getElementById('summaryBox');
   s.style.display=s.style.display==='none'?'block':'none';
 });
+function showLogic(){
+  const m=META;
+  document.getElementById('logicCard').innerHTML =
+    '<div class="mhead"><b>「命中標的」是怎麼篩出來的?</b><span class="mclose" onclick="closeLogic()">✕</span></div>'+
+    '<p>全市場約 1,900 檔(上市+上櫃)經過<b>兩關</b>篩選,共 <b style="color:var(--gold)">'+m.total+'</b> 檔命中:</p>'+
+    '<h4>第 1 關 ・ 基本篩選池</h4>'+
+    '<ul>'+
+      '<li>市場:<b>上市 + 上櫃</b>(只取股票,排除 ETF、權證、特別股)</li>'+
+      '<li>股價:<b>NT$'+m.min_price+'~'+m.max_price+'</b>（= 一張 '+m.min_budget.toLocaleString()+'~'+m.max_budget.toLocaleString()+' 元,台股一張 1000 股）</li>'+
+      '<li>流動性:近 20 日<b>均量 ≥ '+Math.round(m.min_vol/1000)+' 張</b>（'+m.min_vol.toLocaleString()+' 股），太冷門剔除</li>'+
+      '<li>資料量:至少 <b>60 根日 K</b>,否則無法判讀形態</li>'+
+    '</ul>'+
+    '<h4>第 2 關 ・ 做多形態偵測</h4>'+
+    '<p>價格、量通過後,還要命中以下<b>任一做多形態</b>才算數:</p>'+
+    '<ul>'+
+      '<li><b>雙重底 / W 底</b>:兩個等高底（差 ≤5%）+ 中間反彈頸線比底高 ≥4%</li>'+
+      '<li><b>頭肩底</b>:頭比左右兩肩低 ≥3%、左右肩高度相近（差 ≤6%）</li>'+
+      '<li><b>複合頭肩底</b>:多重肩的頭肩底（信心較低,需人工複核）</li>'+
+      '<li><b>動能突破</b>:緊密整理（振幅 ≤22%）後、接近 6 個月高點、帶量突破前高</li>'+
+    '</ul>'+
+    '<p>而且每個底部形態都要通過「<b>結構不可被跌破</b>」檢查 —— 底部（或頭部）之後若被跌破,代表形態已失效,直接<b>排除</b>(避免抓到已破功的舊型態)。</p>'+
+    '<div class="mnote">📌 這 '+m.total+' 檔是「<b>基本命中</b>」。上方那排篩選器(名單、進場方式、總資金、價格、只看可進場、進場時機…)是<b>在這 '+m.total+' 檔之上</b>再幫你篩出當下想看的標的——所以「顯示 X 檔」通常比 '+m.total+' 少。</div>';
+  document.getElementById('logicModal').style.display='flex';
+}
+function closeLogic(){ document.getElementById('logicModal').style.display='none'; }
+document.getElementById('logicModal').addEventListener('click',function(e){ if(e.target===this) closeLogic(); });
 function exportXQ(){
   const items = window.__filtered || [];
   if(!items.length){ alert('目前篩選沒有標的可匯出'); return; }
