@@ -1,5 +1,5 @@
 {
-  "min_price": 20,
+  "min_price": 10,
   "max_price": 100,
   "_說明": "雲端每天掃描的股價區間。改 min_price / max_price 兩個數字即可(隔天 14:00 生效)。例:要含 10 元低價股就把 min_price 改成 10。"
 }
