@@ -15,7 +15,7 @@ output/charts/
 output/report.html
 output/index.html
 output/screener_results.csv
-output/run_*.log
+output/*.log
 
 # 保留:程式碼、requirements、data/(一年歷史快取)、
 #       output/home.html、output/trends.html、output/trend_examples/(靜態頁)
