@@ -13,6 +13,7 @@
   python run.py --max-charts 20      # 最多畫 20 張
 """
 import argparse
+import os
 
 import config
 from src import screener
@@ -33,6 +34,19 @@ def main():
     ap.add_argument("--append", action="store_true",
                     help="雲端模式:用官方端點(TWSE/TPEx)補當日一筆到快取再選股,不碰 Yahoo")
     args = ap.parse_args()
+
+    # 讀 scan_config.json(若有)→ 決定雲端掃描的股價區間(可在 GitHub 上改、隔天生效)
+    import json as _json
+    if os.path.exists("scan_config.json"):
+        try:
+            _sc = _json.load(open("scan_config.json", encoding="utf-8"))
+            if _sc.get("min_price"):
+                config.MIN_PRICE = float(_sc["min_price"])
+            if _sc.get("max_price"):
+                config.MAX_PRICE = float(_sc["max_price"])
+            print(f"  掃描範圍(scan_config.json):NT${config.MIN_PRICE:.0f}~{config.MAX_PRICE:.0f}")
+        except Exception as _e:
+            print(f"  scan_config.json 讀取失敗,用預設:{repr(_e)[:80]}")
 
     # 覆寫設定
     if args.min_price is not None:

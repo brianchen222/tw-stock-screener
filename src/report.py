@@ -320,6 +320,10 @@ document.getElementById('stats').innerHTML =
   `<div class="stat"><b>${DATA.filter(d=>d.tier==='次要').length}</b>次要(觸底反彈)</div>` +
   `<div class="stat"><b id="actStat">${META.actionable}</b>可進場(口數≥1)</div>`;
 
+// 價格輸入框預設跟著「掃描範圍」(scan_config.json),避免漏掉範圍外的股票
+document.getElementById('pmin').value = META.min_price;
+document.getElementById('pmax').value = META.max_price;
+
 const patSel = document.getElementById('pat');
 META.patterns.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;patSel.appendChild(o);});
 
@@ -528,7 +532,13 @@ function showLogic(){
       '<li><b>動能突破</b>:緊密整理（振幅 ≤22%）後、接近 6 個月高點、帶量突破前高</li>'+
     '</ul>'+
     '<p>而且每個底部形態都要通過「<b>結構不可被跌破</b>」檢查 —— 底部（或頭部）之後若被跌破,代表形態已失效,直接<b>排除</b>(避免抓到已破功的舊型態)。</p>'+
-    '<div class="mnote">📌 這 '+m.total+' 檔是「<b>基本命中</b>」。上方那排篩選器(名單、進場方式、總資金、價格、只看可進場、進場時機…)是<b>在這 '+m.total+' 檔之上</b>再幫你篩出當下想看的標的——所以「顯示 X 檔」通常比 '+m.total+' 少。</div>';
+    '<div class="mnote">📌 這 '+m.total+' 檔是「<b>基本命中</b>」。上方那排篩選器(名單、進場方式、總資金、價格、只看可進場、進場時機…)是<b>在這 '+m.total+' 檔之上</b>再幫你篩出當下想看的標的——所以「顯示 X 檔」通常比 '+m.total+' 少。</div>'+
+    '<h4>🔧 想改「明天的掃描範圍」?</h4>'+
+    '<p>目前每天掃描股價:<b>NT$'+m.min_price+'~'+m.max_price+'</b>(改了隔天 14:00 生效)。想含更低/更高價的股票:</p>'+
+    '<ul>'+
+      '<li><b>最簡單</b>:跟 Claude 說一句「明天掃 10~120」,改完自動更新。</li>'+
+      '<li><b>自助</b>:<a href="https://github.com/brianchen222/tw-stock-screener/edit/main/scan_config.json" target="_blank" style="color:#7fb2ff;text-decoration:underline">點此到 GitHub 編輯設定</a> → 改 min_price / max_price 兩個數字 → 按綠色「Commit changes」→ 隔天生效。</li>'+
+    '</ul>';
   document.getElementById('logicModal').style.display='flex';
 }
 function closeLogic(){ document.getElementById('logicModal').style.display='none'; }
