@@ -44,7 +44,12 @@ def main():
                 config.MIN_PRICE = float(_sc["min_price"])
             if _sc.get("max_price"):
                 config.MAX_PRICE = float(_sc["max_price"])
-            print(f"  掃描範圍(scan_config.json):NT${config.MIN_PRICE:.0f}~{config.MAX_PRICE:.0f}")
+            if _sc.get("min_volume_lots"):
+                config.MIN_AVG_VOLUME = int(float(_sc["min_volume_lots"]) * config.SHARES_PER_LOT)
+            if _sc.get("min_bars"):
+                config.MIN_BARS = int(_sc["min_bars"])
+            print(f"  掃描設定(scan_config.json):股價 NT${config.MIN_PRICE:.0f}~{config.MAX_PRICE:.0f}、"
+                  f"均量≥{config.MIN_AVG_VOLUME//1000}張、≥{config.MIN_BARS}根K")
         except Exception as _e:
             print(f"  scan_config.json 讀取失敗,用預設:{repr(_e)[:80]}")
 

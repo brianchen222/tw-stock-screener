@@ -15,6 +15,7 @@ MAX_PRICE = MAX_BUDGET / SHARES_PER_LOT   # 100.0
 
 # ---- 流動性篩選 ----
 MIN_AVG_VOLUME = 500_000       # 近 20 日平均成交股數下限(= 500 張),太冷門的剔除
+MIN_BARS = 60                  # 至少幾根日 K 才納入(不足無法判讀形態)
 
 # ---- 資料抓取 ----
 LOOKBACK_DAYS = 365            # K 線回看天數(約一年)

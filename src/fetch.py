@@ -58,7 +58,7 @@ def _clean(df):
     df = df[OHLCV_COLS].dropna()
     df = df[df["Volume"] > 0]
     df = df.sort_index()
-    return df if len(df) >= 60 else None  # 至少 60 根才有意義
+    return df if len(df) >= config.MIN_BARS else None  # 至少幾根才有意義(可調)
 
 
 # ---------- yfinance 批次 ----------

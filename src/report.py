@@ -105,6 +105,7 @@ def write_report(results, path=None):
         "min_budget": int(config.MIN_PRICE * config.SHARES_PER_LOT),
         "max_budget": int(config.MAX_PRICE * config.SHARES_PER_LOT),
         "min_vol": config.MIN_AVG_VOLUME,
+        "min_bars": config.MIN_BARS,
         "patterns": all_pats,
         "entrable_pullback": config.ENTRABLE_PULLBACK_MAX * 100,
         "entrable_breakout": config.ENTRABLE_BREAKOUT_MAX * 100,
@@ -172,6 +173,8 @@ h1{margin:0 0 4px;font-size:24px;letter-spacing:1px}
 .fbtn{font-size:15px;font-weight:700;color:var(--txt);background:var(--panel2);
   border:1px solid var(--line);border-radius:8px;padding:7px 14px;cursor:pointer}
 .fbtn:hover{background:#2a3450}
+a.fbtn.refetch{text-decoration:none;background:#0e2a1a;color:#9bf0bf;border-color:#1f5a3a}
+a.fbtn.refetch:hover{background:#123a26}
 .filterbar #count{margin-left:auto;color:var(--mut);font-size:16px}
 .sumbox{margin-top:10px;background:var(--panel);border:1px solid var(--line);
   border-radius:12px;padding:14px 18px}
@@ -253,6 +256,7 @@ a{color:var(--blue)}
   <div class="filterbar">
     <button id="toggleFilters" class="fbtn">🔍 篩選條件 ▲</button>
     <button id="toggleSummary" class="fbtn">📋 條件總覽</button>
+    <a class="fbtn refetch" href="https://github.com/brianchen222/tw-stock-screener/actions/workflows/daily.yml" target="_blank" title="用最新掃描條件重跑、含完整範圍(約15分鐘)">🔄 重新抓取資料</a>
     <span id="count"></span>
   </div>
   <div id="summaryBox" class="sumbox" style="display:none"></div>
@@ -521,7 +525,7 @@ function showLogic(){
       '<li>市場:<b>上市 + 上櫃</b>(只取股票,排除 ETF、權證、特別股)</li>'+
       '<li>股價:<b>NT$'+m.min_price+'~'+m.max_price+'</b>（= 一張 '+m.min_budget.toLocaleString()+'~'+m.max_budget.toLocaleString()+' 元,台股一張 1000 股）</li>'+
       '<li>流動性:近 20 日<b>均量 ≥ '+Math.round(m.min_vol/1000)+' 張</b>（'+m.min_vol.toLocaleString()+' 股），太冷門剔除</li>'+
-      '<li>資料量:至少 <b>60 根日 K</b>,否則無法判讀形態</li>'+
+      '<li>資料量:至少 <b>'+m.min_bars+' 根日 K</b>,否則無法判讀形態</li>'+
     '</ul>'+
     '<h4>第 2 關 ・ 做多形態偵測</h4>'+
     '<p>價格、量通過後,還要命中以下<b>任一做多形態</b>才算數:</p>'+
@@ -533,12 +537,14 @@ function showLogic(){
     '</ul>'+
     '<p>而且每個底部形態都要通過「<b>結構不可被跌破</b>」檢查 —— 底部（或頭部）之後若被跌破,代表形態已失效,直接<b>排除</b>(避免抓到已破功的舊型態)。</p>'+
     '<div class="mnote">📌 這 '+m.total+' 檔是「<b>基本命中</b>」。上方那排篩選器(名單、進場方式、總資金、價格、只看可進場、進場時機…)是<b>在這 '+m.total+' 檔之上</b>再幫你篩出當下想看的標的——所以「顯示 X 檔」通常比 '+m.total+' 少。</div>'+
-    '<h4>🔧 想改「明天的掃描範圍」?</h4>'+
-    '<p>目前每天掃描股價:<b>NT$'+m.min_price+'~'+m.max_price+'</b>(改了隔天 14:00 生效)。想含更低/更高價的股票:</p>'+
+    '<h4>🔧 想改掃描條件 / 重新抓取?</h4>'+
+    '<p>目前掃描條件:股價 <b>NT$'+m.min_price+'~'+m.max_price+'</b>、近20日均量 <b>≥'+Math.round(m.min_vol/1000)+'張</b>、至少 <b>'+m.min_bars+'根K</b>。要改(例如含低價股、或含較冷門):</p>'+
     '<ul>'+
-      '<li><b>最簡單</b>:跟 Claude 說一句「明天掃 10~120」,改完自動更新。</li>'+
-      '<li><b>自助</b>:<a href="https://github.com/brianchen222/tw-stock-screener/edit/main/scan_config.json" target="_blank" style="color:#7fb2ff;text-decoration:underline">點此到 GitHub 編輯設定</a> → 改 min_price / max_price 兩個數字 → 按綠色「Commit changes」→ 隔天生效。</li>'+
-    '</ul>';
+      '<li><b>最簡單</b>:跟 Claude 說一句「明天掃 10~120、均量200張」,改完自動更新。</li>'+
+      '<li><b>自助改條件</b>:<a href="https://github.com/brianchen222/tw-stock-screener/edit/main/scan_config.json" target="_blank" style="color:#7fb2ff;text-decoration:underline">到 GitHub 編輯 scan_config.json</a> → 改 min_price/max_price/min_volume_lots/min_bars → 按綠色「Commit changes」。</li>'+
+      '<li><b>立即重新抓取</b>(用最新條件重跑、含完整範圍):<a href="https://github.com/brianchen222/tw-stock-screener/actions/workflows/daily.yml" target="_blank" style="color:#7ff0c8;text-decoration:underline">到 GitHub Actions → 按「Run workflow」</a>,約 15 分鐘後生效。</li>'+
+    '</ul>'+
+    '<div class="mnote" style="background:#0e2a1a;border-color:#1f5a3a;color:#9bf0bf">💡 為什麼不是網頁上一個按鈕就好?因為這是<b>靜態網站</b>(背後沒有伺服器),瀏覽器不能直接重跑選股程式;上面這個「Run workflow」就是安全又免費的重新抓取方式。</div>';
   document.getElementById('logicModal').style.display='flex';
 }
 function closeLogic(){ document.getElementById('logicModal').style.display='none'; }
